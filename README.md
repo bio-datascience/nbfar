@@ -200,5 +200,5 @@ We thank Dr. Andreas Buja for useful comments on the project.
 
 You can also contact us via email
 
--   Aditya Mishra: [mailto](mailto:amishra@flatironinstitute.org)
--   Christian Mueller: [mailto](mailto:cmueller@flatironinstitute.org)
+- [Aditya Mishra](mailto:amishra@flatironinstitute.org)
+- [Christian L. Mueller](mailto:cmueller@flatironinstitute.org)
