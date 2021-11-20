@@ -196,7 +196,7 @@ Acknowledgments
 
 We thank Dr. Andreas Buja for useful comments on the project.
 
-## Queries
+## Inquiries
 
 You can also contact us via email
 
