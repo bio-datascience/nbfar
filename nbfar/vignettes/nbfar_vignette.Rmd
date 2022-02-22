@@ -1,69 +1,36 @@
-# Negative binomial factor regression models with application to microbiome data analysis
-
-The R package `nbfar` implements Negative Binomial factor regression models that allow the estimation of 
-structured (sparse) associations between a feature matrix X and overdispersed count data Y. 
-
-The package has been developed with microbiome count data Y in mind and can be used, e.g., to associate 
-host or environmental covariates with microbial abundances.
-
-Currently, two models are available
-
-- **Negative Binomial reduced rank regression (NB-RRR)**
-- **Negative Binomial co-sparse factor regression (NB-FAR)**.
-
-The underlying structure of the models are illustrated in the Figure below.
-
-<img src="https://i.imgur.com/ytq5qZK.jpg" alt="nbfar" height="80%" align="center"/>
-
-Both models result in a type of joint biclustering structure linking features to count responses.
-
-Microbiome data example - linking host phenotype data to microbial abundances of the American Gut project
---------------
-
-Using `nbfar` we analyzed the [American Gut Project data](https://journals.asm.org/doi/10.1128/mSystems.00031-18) 
-and [Vioscreen](https://www.vioscreen.com/Home) information to identify robust links between diet and life style 
-features and broad abundance patterns of microbial families. 
-
-The manually curated data file as 'phyloseq' object is available [here](https://github.com/amishra-stats/nbfar/raw/master/manuscript_file/final_ag_vio.rda). 
-
-Some of our findings are summarized in the Figure below where we show microbial families and host-associated feature 
-biclusters automatically identified by `nbfar`.
-
-<img src="https://i.imgur.com/XK37aHm.jpg" alt="nbfar" width=100%/>
+---
+  title: "Negative Binomial factor regression with application to microbiome data analysis"
+  output: rmarkdown::pdf_document
+  author: "Aditya Mishra, Christian L. Müller"
+  date: "`r Sys.Date()`"
+  vignette: >
+    %\VignetteIndexEntry{Negative Binomial factor regression with application to microbiome data analysis}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+---
 
 
 
-Getting started  
---------------
-
-The `nbfar` package is currently available on GitHub and can be installed as follows.
-The package `Rcpp` is required for installation.
-
-```
-# Install packages
-install.packages("Rcpp", repos="https://rcppcore.github.io/drat")
-devtools::install_github('amishra-stats/nbfar/nbfar', force = TRUE)
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
 ```
 
-To use the library, we also rely on parallel computation. 
 
-```
-# load library
+
+```{r setup}
 library(nbfar)
-library(RcppParallel)
 ```
 
+# Simulation examples 
 
-Simulation examples 
---------------
-
-We showcase the usage of **nbfar** and  **nbrrr** on simulated data. 
-
+We showcase the usage of **nbfar** and  **nbrrr** on simulated data. We simulate response and covariates matrix for multivariate negative binomial regression with a low-rank and sparse coefficient matrix. The coefficient matrix **C** is expressed in terms of **U** (left singular vector), **D** (singular values) and **V** (right singular vector).
 
 ### Data simulation
 
-
-```
+```{r}
 ## ## -----------------------Simulation settings --------------------
 ## Simulation setting:
 ## n: sample size
@@ -75,7 +42,7 @@ We showcase the usage of **nbfar** and  **nbrrr** on simulated data.
 ## nlam: number of lambda values to be fitted
 ## rank.est: maximum estimated rank to be specified to the model
 ## s: multiplicative factor of singular values
-## nthread: number of parallel thread can be used in  parallel for cross validation  
+## nthread: number of parallel thread can be used in  parallel for cross validation
 ## The simulation was replicated 100 times under each setting as detailed in the paper.
 
 #
@@ -145,32 +112,38 @@ t.ind <- sample.int(n * q, size = miss * n * q)
 y <- as.vector(Y)
 y[t.ind] <- NA
 Ym <- matrix(y, n, q)   # 20% of entries are missing at random
-
 ```
+
 
 ###  Negative Binomial reduced rank regression: **nbrrr** 
 
+In the range of 1 to maxrank, the estimation procedure selects the rank r of the coefficient matrix using a cross-validation approach. For the selected rank, a rank r coefficient matrix is estimated that best fits the observations.
 
-```
-
+```{r}
 # Model fit: (full data)
 set.seed(example_seed)
 control_r3 <- nbfar_control(initmaxit = 10000, initepsilon = 1e-5,
                             objI = 1)
-nbrrr_test <- nbrrr(Y, X, maxrank = 5, control = control_r3, nfold = 5, trace = F)
+# nbrrr_test <- nbrrr(Y, X, maxrank = 5, control = control_r3, nfold = 5, trace = F)
 
 
 # Model fit:  (missing data)
 set.seed(example_seed)
 control_r3 <- nbfar_control(initmaxit = 10000, initepsilon = 1e-5,
                             objI = 1)
-nbrrr_testm <- nbrrr(Ym, X, maxrank = 5, control = control_r3, nfold = 5,trace = F)
-
+# nbrrr_testm <- nbrrr(Ym, X, maxrank = 5, control = control_r3, nfold = 5,trace = F)
 
 ```
+
+
+
 ###  Negative Binomial co-sparse factor regression: **nbfar** 
 
-```
+
+To estimate a low-rank and sparse coefficient matrix in large/high dimensional setting, the approach extracts unit-rank components of required matrix in sequential order. The algorithm automatically stops after extracting sufficient unit rank components.
+ 
+ 
+```{r}
 # Model fit: (full data)
 RcppParallel::setThreadOptions(numThreads = nthread)
 set.seed(example_seed)
@@ -179,10 +152,10 @@ control_nbfar <- nbfar_control(gamma0 = 1, spU = sp, spV = 20/q,
                                lamMinFac = 1e-7, epsilon = 1e-4,
                                objI = 0,
                                initmaxit = 10000, initepsilon = 1e-7)
-nbfar_test <- nbfar(Y, X, maxrank = rank.est, nlambda = nlam,
-                    cIndex = NULL,
-                    ofset = NULL, control = control_nbfar, nfold = 5,
-                    PATH = FALSE, nthread = nthread,trace = F)
+# nbfar_test <- nbfar(Y, X, maxrank = rank.est, nlambda = nlam,
+#                     cIndex = NULL,
+#                     ofset = NULL, control = control_nbfar, nfold = 5,
+#                     PATH = FALSE, nthread = nthread,trace = F)
 
 # Model fit: (missing data)
 RcppParallel::setThreadOptions(numThreads = nthread)
@@ -192,31 +165,12 @@ control_nbfar <- nbfar_control(gamma0 = 1, spU = sp, spV = 20/q,
                                lamMinFac = 1e-7, epsilon = 1e-4,
                                objI = 0,
                                initmaxit = 10000, initepsilon = 1e-7)
-nbfar_testm <- nbfar(Ym, X, maxrank = rank.est, nlambda = nlam,
-                    cIndex = NULL,
-                    ofset = NULL, control = control_nbfar, nfold = 5,
-                    PATH = FALSE, nthread = nthread,trace = F)
+# nbfar_testm <- nbfar(Ym, X, maxrank = rank.est, nlambda = nlam,
+#                     cIndex = NULL,
+#                     ofset = NULL, control = control_nbfar, nfold = 5,
+#                     PATH = FALSE, nthread = nthread,trace = F)
+
 ```
 
 
-Community Guidelines
---------------------
 
-1.  Contributions and suggestions to the software are always welcome.
-    Please consult our [contribution guidelines](https://github.com/mingzehuang/latentcor/blob/master/CONTRIBUTING.md) prior
-    to submitting a pull request.
-2.  Report issues or problems with the software using github’s [issue
-    tracker](https://github.com/amishra-stats/nbfar/issues).
-3.  Contributors must adhere to the [Code of Conduct](https://github.com/amishra-stats/latentcor/blob/master/CODE_OF_CONDUCT.md).
-
-Acknowledgments
---------------
-
-We thank Dr. Andreas Buja for useful comments on the project.
-
-## Inquiries
-
-You can also contact us via email
-
-- [Aditya Mishra](mailto:amishra@flatironinstitute.org)
-- [Christian L. Mueller](mailto:cmueller@flatironinstitute.org)

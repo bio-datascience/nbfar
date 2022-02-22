@@ -2,7 +2,7 @@
 % Please edit documentation in R/nbfar.R
 \name{nbfar_sim}
 \alias{nbfar_sim}
-\title{Simulate data for negative binomial factor regression}
+\title{Simulated data for testing NBFAR and NBRRR model}
 \usage{
 nbfar_sim(U, D, V, n, Xsigma, C0, disp, depth)
 }
@@ -15,20 +15,20 @@ nbfar_sim(U, D, V, n, Xsigma, C0, disp, depth)
 
 \item{n}{sample size}
 
-\item{Xsigma}{covariance matrix for generating sample of X}
+\item{Xsigma}{covariance matrix used to generate predictors in X}
 
-\item{C0}{Specified coefficient matrix with first row being intercept}
+\item{C0}{intercept value in the coefficient matrix}
 
 \item{disp}{dispersion parameter of the generative model}
 
-\item{depth}{sequencing depth of the microbiome data}
+\item{depth}{log of the sequencing depth of the microbiome data (used as an offset in the simulated multivariate negative binomial regression model)}
 }
 \value{
 \item{Y}{Generated response matrix}
-  \item{X}{Generated predictor matrix}
+\item{X}{Generated predictor matrix}
 }
 \description{
-Generate random samples from a negative binomial factor regression model
+Simulate response and covariates for multivariate negative binomial regression with a low-rank and sparse coefficient matrix. Coefficient matrix is expressed in terms of U (left singular vector), D (singular values) and V (right singular vector).
 }
 \examples{
 ## Model specification:
@@ -84,5 +84,11 @@ sim.sample <- nbfar_sim(U, D, V, n, Xsigma, C0,disp = 3, depth = 10)  # Simulate
 # Dispersion parameter
 X <- sim.sample$X[1:n, ]
 Y <- sim.sample$Y[1:n, ]
-
+# disp = 3; depth = 10;
+# simulate_nbfar <- list(Y = Y,X = X, U = U, D = D, V = V, n=n,
+# Xsigma = Xsigma, C0 = C0,disp =disp, depth =depth)
+# save(simulate_nbfar, file = 'data/simulate_nbfar.RData')
+}
+\references{
+Mishra, A., Müller, C. (2022) \emph{Negative binomial factor regression models with application to microbiome data analysis.  https://doi.org/10.1101/2021.11.29.470304}
 }
